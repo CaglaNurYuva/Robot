@@ -35,6 +35,19 @@ def printDelivered_entry():
     else:
         print("No data to print.")
     
+
+            
+def payment_taken():
+    global alreadyDeliveredOrders_ref
+    # Query Firestore to find the document where OrderID is equal to "id1"
+    for doc in alreadyDeliveredOrders_ref:
+        current_id = doc.id
+        data = db.collection("alreadyDeliveredOrders").document(current_id).get().to_dict()
+        if data.get("OrderID") == "id2":
+            db.collection("alreadyDeliveredOrders").document(current_id).delete()
+            break
+
+
     
 
 # Function to initialize ordered_entries with initial database
@@ -43,7 +56,7 @@ def initialize():
     orders_ref = db.collection("orders").order_by("timestamp").get()
     ordered_entries = [doc.to_dict() for doc in orders_ref]
     # Retrieve documents from Firestore in descending order of timestamp
-    currentlyProcessedOrder_ref = db.collection("currentlyProcessedOrder").order_by("timestamp", direction=firestore.Query.DESCENDING).get()
+    currentlyProcessedOrder_ref = db.collection("currentlyProcessedOrder").order_by("timestamp").get()
     alreadyDeliveredOrders_ref = db.collection("alreadyDeliveredOrders").order_by("timestamp").get()
 
     print("Initialization complete.")
@@ -116,6 +129,7 @@ def handleOrder():
             currentlyProcessedData = {
             "OrderID": data.get("OrderID"),
             "fromWhichTable": data.get("fromWhichTable"),
+            "Price": data.get("Price"),
             "orderStatus": data.get("orderStatus"),
             "timestamp": firestore.SERVER_TIMESTAMP
             }
@@ -263,6 +277,9 @@ print_button.pack()
 
 printDelivered_button = Button(root, text="Print All Already Delivered Orders", command=printDelivered_entry)
 printDelivered_button.pack()
+
+payment_button = Button(root, text="Payment is taken for the order with id2", command=payment_taken)
+payment_button.pack()
 
 # Exit Button
 exit_button = Button(root, text="Exit", command=root.quit)
